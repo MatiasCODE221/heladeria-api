@@ -1,0 +1,80 @@
+
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "sqlite" url = env("DATABASE_URL") }
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role     @default(CUSTOMER)
+  orders        Order[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+enum Role { ADMIN CUSTOMER }
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  items       OrderItem[]
+}
+
+model Topping {
+  id       Int       @id @default(autoincrement())
+  name     String
+  price    Int
+  items    OrderItemTopping[]
+}
+
+model Order {
+  id         Int        @id @default(autoincrement())
+  user       User       @relation(fields: [userId], references: [id])
+  userId     Int
+  status     OrderStatus @default(CART)
+  total      Int         @default(0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  items      OrderItem[]
+  payment    Payment?
+}
+
+enum OrderStatus { CART PENDING PREPARATION ON_THE_WAY DELIVERED CANCELLED }
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int      @default(1)
+  baseFlavor String?
+  notes      String?
+  toppings   OrderItemTopping[]
+  lineTotal  Int      @default(0)
+}
+
+model OrderItemTopping {
+  id          Int      @id @default(autoincrement())
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  orderItemId Int
+  topping     Topping  @relation(fields: [toppingId], references: [id])
+  toppingId   Int
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int      @unique
+  amount    Int
+  status    PaymentStatus @default(PENDING)
+  method    String?
+  createdAt DateTime @default(now())
+}
+enum PaymentStatus { PENDING PAID FAILED }

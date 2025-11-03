@@ -1,0 +1,25 @@
+
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRouter from './routes/auth.js';
+import catalogRouter from './routes/catalog.js';
+import cartRouter from './routes/cart.js';
+import ordersRouter from './routes/orders.js';
+import paymentsRouter from './routes/payments.js';
+import adminRouter from './routes/admin.js';
+import reportsRouter from './routes/reports.js';
+dotenv.config();
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.get('/', (req,res)=>res.json({ ok:true, service:'Heladeria API' }));
+app.use('/auth', authRouter);
+app.use('/catalog', catalogRouter);
+app.use('/cart', cartRouter);
+app.use('/orders', ordersRouter);
+app.use('/payments', paymentsRouter);
+app.use('/admin', adminRouter);
+app.use('/reports', reportsRouter);
+const port = process.env.PORT || 3000;
+app.listen(port, ()=>console.log(`API listening on http://localhost:${port}`));
